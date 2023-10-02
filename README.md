@@ -1,2 +1,7 @@
-# safesteps-hardware
-Hardware (ESP32)
+# safesteps-hardware: Hardware Repo for XC475 Safesteps Team!
+
+## About
+
+## Setup
+
+## Examples

@@ -35,6 +35,8 @@ void setup() {
   BLE.setEventHandler(BLEDisconnected, blePeripheralDisconnectHandler);
   BLE.advertise();
 
+  Serial.println("\n\nNow scanning for devices...\n\n");
+
 }
 
 void loop() {

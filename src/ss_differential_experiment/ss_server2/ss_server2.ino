@@ -35,7 +35,7 @@ void setup() {
   }
 
   BLE.setDeviceName("Arduino ESP32");
-  BLE.setLocalName("SafeSteps Beacon");
+  BLE.setLocalName("SafeSteps Beacon 2");
 
   safeStepsCharacteristic.addDescriptor(safeStepsDescriptor);
   safeStepsService.addCharacteristic(safeStepsCharacteristic);
@@ -69,7 +69,7 @@ void loop() {
     while (central.connected()){
       
       central.poll(); // This doesn't really have an effect on things it seems
-      if (millis() > last_time + 1000){
+      if (millis() > last_time + 100){
         Serial.println(central.rssi());
         broadcastCharacteristic.writeValue(broadcast++);
         // broadcastCharacteristic.broadcast(); // What does this do tho??? 

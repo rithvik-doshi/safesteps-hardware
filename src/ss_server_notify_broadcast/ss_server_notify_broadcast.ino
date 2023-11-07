@@ -18,15 +18,20 @@
 // bool oldDeviceConnected = false;
 int message = 0x420F;
 int broadcast = 0x2468;
-long last_time = 0;
+long last_time = 0, second_time = 0;
 BLEService safeStepsService("6969");
 BLEIntCharacteristic safeStepsCharacteristic("AFAF", BLERead | BLENotify | BLEWrite | BLEIndicate);
 BLEIntCharacteristic broadcastCharacteristic("2468", BLERead | BLENotify | BLEBroadcast);
 BLEDescriptor safeStepsDescriptor("420F", "message");
 
+int LED_BUILTIN = 2;
+int onoff = 0x0;
+
 void setup() {
   Serial.begin(9600); // Initialize Serial Communication
   while (!Serial);
+
+  pinMode (LED_BUILTIN, OUTPUT);
 
   if (!BLE.begin()) { //Initialize BLE
     Serial.println("starting BLE failed!");
@@ -51,16 +56,21 @@ void setup() {
 
   Serial.println("Waiting on a client connection to notify...");
 
-  broadcastCharacteristic.writeValue(broadcast);
-  broadcastCharacteristic.broadcast();
+  // broadcastCharacteristic.writeValue(broadcast);
+  // broadcastCharacteristic.broadcast();
 
 }
 
 void loop() {
 
+  // Set the advertising interval in units of 0.625 ms. Defaults to 100ms (160 * 0.625 ms) if not provided.
+  // 20ms = 0.625*32
+  BLE.setAdvertisingInterval(32);
   BLEDevice central = look20ms();
 
+  // 152.5ms = 244*0.6.25
   if (!central){
+    BLE.setAdvertisingInterval(244);
     central = lookLonger();
   }
 
@@ -70,7 +80,7 @@ void loop() {
       
       central.poll(); // This doesn't really have an effect on things it seems
       if (millis() > last_time + 1000){
-        Serial.println(central.rssi());
+        // Serial.println(central.rssi());
         broadcastCharacteristic.writeValue(broadcast++);
         // broadcastCharacteristic.broadcast(); // What does this do tho??? 
         if (safeStepsCharacteristic.subscribed()){
@@ -100,27 +110,39 @@ void loop() {
 BLEDevice look20ms(){
   // https://community.cypress.com/t5/Knowledge-Base-Articles/Making-a-BLE-Device-Discoverable-on-iOS-Devices-KBA223312/ta-p/250101
   last_time = millis();
+  second_time = millis();
   Serial.println("Start advertising @ 20ms...");
   while (millis() < last_time + 30000){
-    broadcastCharacteristic.broadcast();
+    if (millis() > second_time + 500){
+      // broadcastCharacteristic.broadcast();
+      second_time = millis();
+      onoff = !onoff;
+      digitalWrite(LED_BUILTIN, onoff);
+    }
     BLEDevice central = BLE.central();
     if (central){
       return central;
     }
-    delay(20);
+    // delay(20);
   }
   return BLE.central();
 }
 
 BLEDevice lookLonger(){
   Serial.println("Advertising at 152.5ms");
+  second_time = millis();
   while (1){
-    broadcastCharacteristic.broadcast();
+    if (millis() > second_time + 1000){
+      // broadcastCharacteristic.broadcast();
+      second_time = millis();
+      onoff = !onoff;
+      digitalWrite(LED_BUILTIN, onoff);
+    }
     BLEDevice central = BLE.central();
     if (central){
       return central;
     }
-    delay(152.5);
+    // delay(152.5);
   }
 }
 

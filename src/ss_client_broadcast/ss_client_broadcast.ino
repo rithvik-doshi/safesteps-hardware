@@ -18,11 +18,10 @@ Trialling a client ESP32 to make sure we can dial in the logic of connecting cli
 void explorerPeripheral(BLEDevice peripheral);
 
 int LED_BUILTIN = 2;
-
 int onoff = 0x0;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   while (!Serial);
 
   pinMode (LED_BUILTIN, OUTPUT);
@@ -64,18 +63,18 @@ void loop() {
     //   }
     // }
 
-    if (peripheral.advertisedServiceUuid() == "6969"){
-      Serial.println("We got em!");
-    }
+    // if (){
+    //   Serial.println("We got em!");
+    // }
 
-    if (peripheral.localName() == "SafeSteps Beacon"){
+    if (peripheral.advertisedServiceUuid() == "6969"){
       BLE.stopScan();
       explorerPeripheral(peripheral);
 
       Serial.println("Explore done!");
       Serial.println("This program's done. You can reset now...");
       while (1){
-        delay(500);
+        delay(1500);
         onoff = !onoff;
         digitalWrite(LED_BUILTIN, onoff);
       }
@@ -109,6 +108,9 @@ void explorerPeripheral(BLEDevice peripheral) {
 
   // read and print device name of peripheral
   Serial.println();
+    // Print Local Name
+  Serial.print("Local name: ");
+  Serial.println(peripheral.localName());
   Serial.print("Device name: ");
   Serial.println(peripheral.deviceName());
   Serial.print("Appearance: 0x");

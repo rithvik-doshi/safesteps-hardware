@@ -24,9 +24,19 @@ BLEIntCharacteristic safeStepsCharacteristic("AFAF", BLERead | BLENotify | BLEWr
 BLEIntCharacteristic broadcastCharacteristic("2468", BLERead | BLENotify | BLEBroadcast);
 BLEDescriptor safeStepsDescriptor("420F", "message");
 
+int LED_BUILTIN = 2;
+int onoff = 0x0;
+
+void timerCallback() {
+  onoff = !onoff;
+  digitalWrite(LED_BUILTIN, onoff);
+}
+
 void setup() {
   Serial.begin(9600); // Initialize Serial Communication
   while (!Serial);
+
+  pinMode (LED_BUILTIN, OUTPUT);
 
   if (!BLE.begin()) { //Initialize BLE
     Serial.println("starting BLE failed!");
@@ -66,12 +76,14 @@ void loop() {
 
   if (central) {
     last_time = millis();
+
     while (central.connected()){
       
       central.poll(); // This doesn't really have an effect on things it seems
       if (millis() > last_time + 100){
         Serial.println(central.rssi());
         broadcastCharacteristic.writeValue(broadcast++);
+        timerCallback();
         // broadcastCharacteristic.broadcast(); // What does this do tho??? 
         if (safeStepsCharacteristic.subscribed()){
           safeStepsCharacteristic.writeValue(message);
@@ -90,9 +102,10 @@ void loop() {
       }
 
     }
-    Serial.println("Disconnected and message reset.");
+    Serial.println("Disconnected and message + LED reset.");
     message = 0x420F;
     broadcast = 0x2468;
+    digitalWrite(LED_BUILTIN, 0x0);
     delay(3);
   }
 }
